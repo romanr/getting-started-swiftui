@@ -95,12 +95,14 @@ struct ContentView: View {
     }
     
     func generate() async throws {
-        prediction = try await StableDiffusion.predict(with: client,
+        let result = try await StableDiffusion.predict(with: client,
                                                        input: .init(prompt: prompt))
-        try await prediction?.wait(with: client)
+        try await result?.wait(with: client)
+        prediction = result
     }
     
     func cancel() async throws {
-        try await prediction?.cancel(with: client)
+        guard let result = prediction else { return }
+        try await result.cancel(with: client)
     }
 }
