@@ -37,13 +37,13 @@ struct ContentView: View {
                           prompt: Text("Enter a prompt to display an image"),
                           axis: .vertical,
                           label: {})
-                    .disabled(prediction?.status.terminated == false)
-                    .submitLabel(.go)
-                    .onSubmit(of: .text) {
-                        Task {
-                            try! await generate()
-                        }
+                .disabled(prediction?.status.terminated == false)
+                .submitLabel(.go)
+                .onSubmit(of: .text) {
+                    Task {
+                        try! await generate()
                     }
+                }
             }
             
             if let prediction {
@@ -52,36 +52,36 @@ struct ContentView: View {
                         .aspectRatio(1.0, contentMode: .fit)
                     
                     switch prediction.status {
-                    case .starting, .processing:
-                        VStack{
-                            ProgressView("Generating...")
-                                .padding(32)
-                            
-                            Button("Cancel") {
-                                Task { try await cancel() }
-                            }
-                        }
-                    case .failed:
-                        Text(prediction.error?.localizedDescription ?? "Unknown error")
-                            .foregroundColor(.red)
-                    case .succeeded:
-                        if let url = prediction.output?.first {
-                            VStack {
-                                AsyncImage(url: url, scale: 2.0, content: { phase in
-                                    phase.image?
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .cornerRadius(32)
-                                })
-                                
-                                ShareLink("Export", item: url)
+                        case .starting, .processing:
+                            VStack{
+                                ProgressView("Generating...")
                                     .padding(32)
-
+                                
+                                Button("Cancel") {
+                                    Task { try await cancel() }
+                                }
                             }
-                        }
-                    case .canceled:
-                        Text("The prediction was canceled")
-                            .foregroundColor(.secondary)
+                        case .failed:
+                            Text(prediction.error?.localizedDescription ?? "Unknown error")
+                                .foregroundColor(.red)
+                        case .succeeded:
+                            if let url = prediction.output?.first {
+                                VStack {
+                                    AsyncImage(url: url, scale: 2.0, content: { phase in
+                                        phase.image?
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .cornerRadius(32)
+                                    })
+                                    
+                                    ShareLink("Export", item: url)
+                                        .padding(32)
+                                    
+                                }
+                            }
+                        case .canceled:
+                            Text("The prediction was canceled")
+                                .foregroundColor(.secondary)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
@@ -104,3 +104,4 @@ struct ContentView: View {
         guard var result = prediction else { return }
         try await result.cancel(with: client)
     }
+}
